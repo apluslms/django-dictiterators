@@ -19,7 +19,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='django-dictiterators',
-    version='1.0.0',
+    version='1.1.0',
     description='Django utility to work with list of dicts in templates',
     long_description=long_description,
     keywords='django templates',
