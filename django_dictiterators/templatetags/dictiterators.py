@@ -1,23 +1,58 @@
-from django.template.defaulttags import ForNode
 from django.template import Node, NodeList, Library
+from django.template.defaulttags import ForNode
+from django.utils.safestring import mark_safe
 
 
 register = Library()
 
 
-class DictUnpackNode(Node):
-    CONTEXT_VAR = '__dict__'
+class ForEachDictNode(Node):
+    child_nodelists = ('nodelist_loop', 'nodelist_empty')
 
-    def __init__(self, nodelist):
-        self.nodelist = nodelist
+    def __init__(self, sequence, nodelist_loop, nodelist_empty=None):
+        self.sequence = sequence
+        self.nodelist_loop = nodelist_loop
+        self.nodelist_empty = nodelist_empty or NodeList()
 
     def __repr__(self):
-        return "<DictUnpackNode>"
+        return "<%s: in %s, tail_len: %d>" % (
+            self.__class__.__name__,
+            self.sequence,
+            len(self.nodelist_loop),
+        )
+
+    def __iter__(self):
+        yield from self.nodelist_loop
+        yield from self.nodelist_empty
 
     def render(self, context):
-        values = context[self.CONTEXT_VAR]
-        with context.push(**values):
-            return self.nodelist.render(context)
+        rendered = 0
+        parentloop = context['foreachloop'] if 'foreachloop' in context else {}
+        nodelist = []
+
+        try:
+            values = self.sequence.resolve(context, True)
+        except VariableDoesNotExist:
+            values = []
+        if values is None:
+            values = []
+
+        with context.push():
+            loop_dict = context['foreachloop'] = {'parentloop': parentloop}
+
+            for i, item in enumerate(values):
+                loop_dict['counter0'] = i
+                loop_dict['counter'] = i + 1
+                loop_dict['first'] = (i == 0)
+
+                with context.push(**item):
+                    for node in self.nodelist_loop:
+                        nodelist.append(node.render_annotated(context))
+                rendered += 1
+
+        if rendered:
+            return mark_safe(''.join(nodelist))
+        return self.nodelist_empty.render(context)
 
 
 @register.tag
@@ -34,13 +69,11 @@ def foreachdict(parser, token):
                                   "%s" % token.contents)
 
     sequence = parser.compile_filter(bits[sequence_i])
-    loopvars = [DictUnpackNode.CONTEXT_VAR]
     nodelist_loop = parser.parse(('empty', 'endforeachdict',))
-    nodelist_loop = NodeList(DictUnpackNode(nodelist_loop))
     token = parser.next_token()
     if token.contents == 'empty':
         nodelist_empty = parser.parse(('endforeachdict',))
         parser.delete_first_token()
     else:
         nodelist_empty = None
-    return ForNode(loopvars, sequence, is_reversed, nodelist_loop, nodelist_empty)
+    return ForEachDictNode(sequence, nodelist_loop, nodelist_empty)
