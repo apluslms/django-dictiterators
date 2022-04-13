@@ -19,11 +19,11 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='django-dictiterators',
-    version='1.1.0',
+    version='1.1.1',
     description='Django utility to work with list of dicts in templates',
     long_description=long_description,
     keywords='django templates',
-    url='https://github.com/Aalto-LeTech/django-dictiterators',
+    url='https://github.com/apluslms/django-dictiterators',
     author='Jaakko Kantojärvi',
     author_email='jaakko@n-1.fi',
     license='MIT',
@@ -42,11 +42,12 @@ setup(
         'Topic :: Software Development :: Build Tools',
         'Topic :: Software Development :: Libraries :: Python Modules',
         'Framework :: Django',
-        'Framework :: Django :: 1.9',
+        'Framework :: Django :: 3.2',
 
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
+        'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3 :: Only',
     ],
 
@@ -54,6 +55,6 @@ setup(
     include_package_data = True,
 
     install_requires=[
-        'Django >=1.9.7',
+        'Django >= 3.2',
     ],
 )
