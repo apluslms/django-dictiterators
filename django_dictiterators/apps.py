@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class DjangoTemplateIteratorsConfig(AppConfig):
-    name = 'django_template_iterators'
+class DjangoDictIteratorsConfig(AppConfig):
+    name = 'django_dictiterators'
